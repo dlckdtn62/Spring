@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="
+        http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- bean definitions here -->
+    <aop:config>
+        <aop:aspect id="myAspect" ref="aBean">
+            <aop:pointcut id="businessService" expression="execution(* kr.co.fastcampus.cli.Dao.insert(..))"/>
+<!--            //pointcut을 별도로 줘서 관리 할 필요의 존재-->
+<!--            <aop:before pointcut-ref="businessService" method="beforelog"/>-->
+<!--            <aop:after pointcut-ref="businessService" method="afterlog"/>-->
+<!--            <aop:after-returning pointcut-ref="businessService" method="afterReturnlog"/>-->
+<!--            <aop:after-throwing pointcut-ref="businessService" method="afterThrowinglog"/>-->
+            <aop:around pointcut-ref= "businessService" method = "aroundLog"/>
+        </aop:aspect>
+    </aop:config>
+
+    <bean id="aBean" class="kr.co.fastcampus.cli.AOP.TransactionBean">
+        <constructor-arg ref = "connection"/>
+    </bean>
+    <bean id = "service" class = "kr.co.fastcampus.cli.AOP.Service"/>
+    <bean id="connectionFactory" class="kr.co.fastcampus.cli.ConnectionFactory">
+        <constructor-arg name = "driverClass" value = "org.h2.Driver" />
+        <constructor-arg name="url" value="jdbc:h2:mem:test_2" />
+        <constructor-arg name="user" value="sa" />
+        <constructor-arg name="password" value="" />
+    </bean>
+<!--    여기 위에는 그냥 설정값 넣어주는 개넘-->
+    <bean id="connection" class="java.sql.Connection"
+          factory-bean="connectionFactory"
+          factory-method="createConnection" />
+    <!--          //여기서는 위의 id가져다 쓰는것 factory bean에서!!-->
+
+    <bean id="dao" class="kr.co.fastcampus.cli.Dao">
+        <constructor-arg ref="connection"/>
+    </bean>
+
+</beans>
